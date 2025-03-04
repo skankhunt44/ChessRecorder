@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chess Board Scanner</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      flex-direction: column;
+    }
+    .container {
+      max-width: 800px;
+      width: 90%;
+      text-align: center;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    video {
+      width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+      margin: 10px 5px;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #pgnDisplay {
+      background-color: #e9ecef;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 5px;
+      text-align: left;
+      font-family: monospace;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Chess Board Scanner</h1>
+    <video id="video" autoplay playsinline></video>
+    <div>
+      <button id="startScan">Start Scanning</button>
+      <button id="stopScan">Stop Scanning</button>
+      <button id="savePGN">Save PGN</button>
+    </div>
+    <div id="pgnDisplay">
+      <h2>Recorded PGN Moves</h2>
+      <pre id="pgnText"></pre>
+    </div>
+  </div>
+
+  <script>
+    // Get elements
+    const video = document.getElementById('video');
+    const startButton = document.getElementById('startScan');
+    const stopButton = document.getElementById('stopScan');
+    const savePGNButton = document.getElementById('savePGN');
+    const pgnText = document.getElementById('pgnText');
+
+    let scanning = false;
+    let scanInterval;
+    let pgnMoves = [];
+
+    // Request access to the camera (using the rear camera if available)
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+      .then(stream => {
+        video.srcObject = stream;
+      })
+      .catch(err => {
+        console.error("Error accessing camera: ", err);
+      });
+
+    // Placeholder function to "detect" a chess move.
+    // Replace this with actual computer vision or ML code (e.g., using OpenCV.js) to analyze the board.
+    function detectChessMove() {
+      // Sample moves for demonstration purposes.
+      const sampleMoves = ["e4", "e5", "Nf3", "Nc6", "Bb5", "a6", "Ba4", "Nf6"];
+      const move = sampleMoves[Math.floor(Math.random() * sampleMoves.length)];
+      return move;
+    }
+
+    // Start scanning: periodically process frames and record a move.
+    function startScanning() {
+      if (scanning) return;
+      scanning = true;
+      scanInterval = setInterval(() => {
+        // In a real implementation, capture the frame and analyze the board.
+        const move = detectChessMove();
+        pgnMoves.push(move);
+        pgnText.textContent = pgnMoves.join(' ');
+      }, 3000); // Every 3 seconds (adjust timing as needed)
+    }
+
+    // Stop the scanning process.
+    function stopScanning() {
+      scanning = false;
+      clearInterval(scanInterval);
+    }
+
+    // Save the PGN moves as a text file.
+    function savePGN() {
+      const pgnData = pgnMoves.join(' ');
+      const blob = new Blob([pgnData], { type: "text/plain;charset=utf-8" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = "chess_game.pgn";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    // Event listeners for buttons.
+    startButton.addEventListener('click', startScanning);
+    stopButton.addEventListener('click', stopScanning);
+    savePGNButton.addEventListener('click', savePGN);
+  </script>
+</body>
+</html>
